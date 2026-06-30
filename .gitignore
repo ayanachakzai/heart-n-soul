@@ -1,0 +1,24 @@
+# macOS
+.DS_Store
+
+# Microsoft Office temp/lock files
+~$*
+
+# Editor / tooling
+.claude/
+.vscode/
+.idea/
+
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.local
+
+# Build output
+dist/
+build/
+
+# Logs
+*.log
