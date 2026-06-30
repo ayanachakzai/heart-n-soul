@@ -517,9 +517,9 @@ strong { font-weight: 700; }
 }
 
 /* ============================================================
-   PASTE MY OWN WORDS
+   TEXT INPUTS (name + paste)
    ============================================================ */
-.custom-input {
+.text-input {
   width: 100%;
   max-width: 32rem;
   font-family: inherit;
@@ -530,11 +530,92 @@ strong { font-weight: 700; }
   border: 2px solid var(--edge);
   border-radius: var(--radius);
   padding: var(--space-3);
-  resize: vertical;
-  min-height: 9rem;
 }
-.custom-input:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
-.custom-input::placeholder { color: #9a8c7c; }
+.text-input:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+.text-input::placeholder { color: #9a8c7c; }
+#name-input { text-align: center; min-height: var(--touch); }
+.custom-input { resize: vertical; min-height: 9rem; }
+
+/* ---- paste screen: helper + examples + upload ---- */
+.helper {
+  width: 100%; max-width: 32rem;
+  background: var(--primary-tint);
+  border: 1px solid #cfe2da;
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  text-align: left;
+}
+.helper__title {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-weight: 700; color: var(--primary-strong); margin-bottom: 0.25rem;
+}
+.helper__title .symbol { font-size: 1.5rem; }
+.helper__body { font-size: var(--fs-small); color: var(--ink); }
+
+.examples__label {
+  width: 100%; max-width: 32rem; text-align: left;
+  font-size: var(--fs-small); font-weight: 700; color: var(--ink-soft);
+}
+.examples { display: flex; flex-wrap: wrap; gap: var(--space-2); width: 100%; max-width: 32rem; }
+.chip {
+  font-family: inherit; font-size: var(--fs-small); font-weight: 700;
+  color: var(--primary-strong);
+  background: var(--surface);
+  border: 2px solid var(--primary);
+  border-radius: 999px;
+  padding: 0.6rem 1.1rem;
+  min-height: 44px;
+  cursor: pointer;
+}
+.chip:hover { background: var(--primary-tint); }
+
+.custom-tools {
+  display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap;
+  width: 100%; max-width: 32rem;
+}
+.upload-btn { cursor: pointer; }
+.custom-tools__hint { font-size: var(--fs-small); color: var(--ink-soft); }
+
+/* ============================================================
+   STEP "GOOD TO KNOW" NOTE
+   ============================================================ */
+.step__note {
+  display: flex; align-items: flex-start; gap: 0.6rem;
+  width: 100%; max-width: 30rem;
+  background: var(--gold-tint);
+  border: 1px solid #e7d3a6;
+  border-radius: var(--radius);
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  color: #6f4e15;
+  font-size: var(--fs-small);
+}
+.step__note[hidden] { display: none; }
+.step__note .symbol { font-size: 1.4rem; color: var(--gold); flex: 0 0 auto; }
+
+/* ============================================================
+   SOOTHE (countdown — needle step only)
+   ============================================================ */
+.soothe {
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
+  width: 100%; max-width: 28rem;
+}
+.soothe[hidden] { display: none; }
+.soothe__lead { font-size: var(--fs-small); color: var(--ink-soft); }
+.soothe .btn--calm { width: 100%; }
+
+/* ============================================================
+   DOWNLOADS (PDF / Picture / Rich text)
+   ============================================================ */
+.downloads { width: 100%; max-width: 30rem; }
+.downloads__label {
+  font-size: var(--fs-small); font-weight: 700; letter-spacing: 0.04em;
+  text-transform: uppercase; color: var(--ink-soft); margin-bottom: var(--space-2);
+}
+.downloads__row { display: flex; gap: var(--space-2); }
+.dl-btn { flex: 1; flex-direction: column; gap: 0.25rem; padding: 0.75rem 0.5rem; }
+.dl-btn .symbol { font-size: 1.9rem; }
+.downloads__status { margin-top: var(--space-2); font-size: var(--fs-small); color: var(--primary-strong); min-height: 1.4rem; }
 
 /* ============================================================
    COUNTDOWN (only runs on tap)
@@ -549,81 +630,52 @@ strong { font-weight: 700; }
 .countdown-status:empty { min-height: 0; }
 
 /* ============================================================
-   PRINTABLE CARD
-   Hidden on screen; revealed only when printing (print-to-PDF).
-   Real text => selectable in the saved PDF.
+   THE CARD (printable + capturable as a JPG)
+   pc-* visual styles live at top level so html2canvas can render
+   the card off-screen; print + capture just reveal it.
    ============================================================ */
-.print-card { display: none; }
+.print-card {
+  display: none;
+  width: 720px;
+  box-sizing: border-box;
+  background: #ffffff;
+  color: #1c1c1c;
+  font-family: Verdana, Tahoma, "Open Sans", sans-serif;
+  padding: 32px;
+}
+/* off-screen render target for the JPG capture */
+.print-card.is-capturing { display: block; position: fixed; left: -10000px; top: 0; }
+
+.pc-head { display: flex; align-items: center; gap: 12px; border-bottom: 3px solid #2c6a5e; padding-bottom: 10px; margin-bottom: 16px; }
+.pc-head__mark { font-size: 34px; color: #c2533f; }
+.pc-kicker { margin: 0; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: #2c6a5e; font-weight: 700; }
+.pc-title { margin: 0; font-size: 26px; }
+
+.pc-section { margin-bottom: 16px; }
+.pc-section--staff { background: #f6e9cf; border: 1.5px solid #b9802b; border-radius: 10px; padding: 12px 14px; }
+.pc-h { display: flex; align-items: center; gap: 6px; margin: 0 0 6px; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; color: #2c6a5e; }
+.pc-section--staff .pc-h { color: #8a5a12; }
+.pc-section--staff .pc-h .symbol { color: #b9802b; font-size: 18px; }
+.pc-line { margin: 0 0 4px; font-size: 15px; }
+
+.pc-steps { list-style: none; margin: 0; padding: 0; }
+.pc-step { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid #e3d8c5; }
+.pc-step__icon { font-size: 28px; color: #2c6a5e; flex: 0 0 auto; }
+.pc-step__body { flex: 1; }
+.pc-step__sentence { margin: 0; font-size: 15px; font-weight: 700; }
+.pc-num { color: #2c6a5e; }
+.pc-step__why { margin: 2px 0 0; font-size: 13px; color: #444; }
+.pc-step__note { margin: 2px 0 0; font-size: 13px; color: #6f4e15; }
+.pc-gloss { margin: 2px 0 0; font-size: 12px; color: #6f5a2a; }
+
+.pc-foot { margin-top: 14px; font-size: 13px; color: #333; font-style: italic; }
 
 @media print {
-  @page { size: A4 portrait; margin: 14mm; }
-
-  /* hide the interactive app, show only the card */
+  @page { size: A4 portrait; margin: 12mm; }
   .app, .skip-link { display: none !important; }
-
-  html, body {
-    background: #fff !important;
-    color: #1c1c1c;
-    font-size: 12pt;
-  }
-
-  .print-card {
-    display: block;
-    color: #1c1c1c;
-    font-family: Verdana, Tahoma, "Open Sans", sans-serif;
-  }
-
-  .pc-head {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border-bottom: 2px solid #2c6a5e;
-    padding-bottom: 8px;
-    margin-bottom: 12px;
-  }
-  .pc-head__mark { font-size: 26pt; color: #c2533f; }
-  .pc-kicker {
-    margin: 0; font-size: 10pt; letter-spacing: 0.08em;
-    text-transform: uppercase; color: #2c6a5e; font-weight: 700;
-  }
-  .pc-title { margin: 0; font-size: 20pt; }
-
-  .pc-consent {
-    display: flex; align-items: center; gap: 8px;
-    background: #f6e9cf;
-    border: 1.5pt solid #b9802b;
-    border-radius: 8px;
-    padding: 8px 12px;
-    margin-bottom: 14px;
-    font-size: 13pt;
-  }
-  .pc-consent .symbol { font-size: 18pt; color: #b9802b; }
-
-  .pc-steps { list-style: none; margin: 0; padding: 0; }
-  .pc-step {
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-    padding: 9px 0;
-    border-bottom: 1pt solid #e3d8c5;
-    break-inside: avoid;
-  }
-  .pc-step__icon {
-    font-size: 22pt; color: #2c6a5e;
-    flex: 0 0 auto;
-  }
-  .pc-step__body { flex: 1; }
-  .pc-step__sentence { margin: 0; font-size: 13pt; font-weight: 700; }
-  .pc-num { color: #2c6a5e; }
-  .pc-step__why { margin: 2px 0 0; font-size: 11pt; color: #444; }
-  .pc-gloss { display: block; margin-top: 2px; font-size: 10pt; color: #6f5a2a; }
-
-  .pc-foot {
-    margin-top: 14px;
-    font-size: 11pt;
-    color: #333;
-    font-style: italic;
-  }
+  html, body { background: #fff !important; }
+  .print-card { display: block; width: auto; padding: 0; }
+  .pc-step { break-inside: avoid; }
 }
 
 /* ============================================================
