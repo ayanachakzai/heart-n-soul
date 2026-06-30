@@ -1,0 +1,651 @@
+/* ============================================================
+   Heart & Soul — easy-read appointment explainer
+   Checkpoint 1: design system (warm, calm, easy-read, accessible)
+
+   Built to easy-read principles:
+   - one idea per step, plain words, a symbol for each idea
+   - body text 20px (well above the 18px floor), nothing under 16px
+   - soft warm background (never #fff), warm dark ink at AA+ contrast
+   - large touch targets (>=44px, mostly ~60px), generous spacing
+   - visible focus ring on every control
+   - respects prefers-reduced-motion; no timers, no auto-advance
+   ============================================================ */
+
+/* ---- Local icon font (no live fetch) -------------------------------
+   Material Symbols Outlined (Apache-2.0), bundled in /assets.
+   NOTE: Tested, photo-symbol banks like Photosymbols are the gold
+   standard for easy-read and should be swapped in for production.
+   One clean, consistent symbol per idea. -------------------------- */
+@font-face {
+  font-family: "Material Symbols Outlined";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("assets/material-symbols.woff2") format("woff2");
+}
+
+.symbol {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: "liga";
+  -webkit-font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+  /* consistent outline style for every symbol */
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 48;
+}
+
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+:root {
+  /* Warm, calm palette ------------------------------------- */
+  --bg-1: #f7efe2;          /* soft warm sand (page) */
+  --bg-2: #f1e4d2;          /* slightly deeper warm tone */
+  --surface: #fffdf7;       /* warm near-white card (never pure #fff) */
+  --surface-sunk: #f6eede;  /* sunken warm panel */
+  --edge: #e6d8c4;          /* soft warm border */
+
+  --ink: #2b2722;           /* warm near-black text (not pure #000) */
+  --ink-soft: #5b5046;      /* muted ink for labels (AA on surface) */
+
+  --primary: #2c6a5e;       /* calm deep teal */
+  --primary-strong: #224f47;/* hover/active */
+  --primary-tint: #e3efe9;  /* soft teal wash for icon badges */
+
+  --calm: #f3dccb;          /* warm peach for the soothe button */
+  --calm-strong: #e9c6ab;
+  --calm-ink: #7a4a2f;      /* warm ink that reads on peach */
+
+  --gold: #b9802b;          /* warm highlight for chosen/consent */
+  --gold-tint: #f6e9cf;
+
+  --focus: #1452c4;         /* high-contrast focus ring (vivid blue) */
+
+  /* Type scale (rem-based so browser zoom to 200% just works) */
+  --fs-body: 1.25rem;       /* 20px  — body floor is 18px, we sit above */
+  --fs-small: 1.0625rem;    /* 17px  — labels/hints (never below 16px) */
+  --fs-step: 1.625rem;      /* 26px  — the one short sentence */
+  --fs-title: 1.75rem;      /* 28px  — screen headings */
+  --lh: 1.55;
+
+  /* Spacing — generous and calm */
+  --space-1: 0.5rem;
+  --space-2: 0.875rem;
+  --space-3: 1.25rem;
+  --space-4: 1.75rem;
+  --space-5: 2.5rem;
+
+  --radius: 18px;
+  --radius-lg: 26px;
+  --touch: 60px;            /* min target height (>= 44px floor) */
+  --shadow: 0 18px 40px -24px rgba(74, 56, 32, 0.45);
+  --shadow-soft: 0 6px 18px -12px rgba(74, 56, 32, 0.4);
+
+  --maxw: 44rem;            /* ~704px reading column */
+}
+
+/* ============================================================
+   RESET / BASE
+   ============================================================ */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { font-size: 100%; -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Verdana, Tahoma, "Open Sans", "Segoe UI", sans-serif;
+  font-size: var(--fs-body);
+  line-height: var(--lh);
+  color: var(--ink);
+  background: linear-gradient(160deg, var(--bg-1) 0%, var(--bg-2) 100%);
+  background-attachment: fixed;
+  /* never let text grow a horizontal scrollbar at 200% zoom */
+  overflow-x: hidden;
+}
+
+p { margin: 0; }
+ul { margin: 0; padding: 0; list-style: none; }
+strong { font-weight: 700; }
+
+/* Visible focus on EVERY interactive control */
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+/* keep it clear even on rounded buttons */
+.btn:focus-visible,
+.card:focus-visible,
+.choice:focus-within {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+/* Skip link */
+.skip-link {
+  position: absolute;
+  left: 50%;
+  top: -100px;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: #fff;
+  padding: var(--space-2) var(--space-3);
+  border-radius: 0 0 var(--radius) var(--radius);
+  font-size: var(--fs-small);
+  z-index: 20;
+  transition: top 0.15s ease;
+}
+.skip-link:focus { top: 0; }
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0);
+  white-space: nowrap; border: 0;
+}
+
+/* ============================================================
+   APP SHELL
+   ============================================================ */
+.app {
+  width: 100%;
+  max-width: var(--maxw);
+  margin-inline: auto;
+  min-height: 100vh;
+  padding: var(--space-4) var(--space-3) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.app__header { display: flex; justify-content: center; }
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--primary-strong);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.brand__mark { font-size: 1.5rem; color: #c2533f; }
+.brand__name { font-size: 1.125rem; }
+
+.app__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.app__footer {
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: var(--fs-small);
+  max-width: 34rem;
+  margin-inline: auto;
+}
+
+/* ============================================================
+   SCREENS (one shown at a time)
+   ============================================================ */
+.screen {
+  background: var(--surface);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: var(--space-5) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-3);
+}
+/* `hidden` must win over the flex display above */
+.screen[hidden] { display: none; }
+
+.screen__icon {
+  font-size: 4.5rem;
+  color: var(--primary);
+  background: var(--primary-tint);
+  border-radius: 50%;
+  width: 7rem;
+  height: 7rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.screen__icon--good { color: var(--primary); background: var(--primary-tint); }
+
+.screen__title {
+  margin: 0;
+  font-size: var(--fs-title);
+  line-height: 1.3;
+  font-weight: 700;
+  max-width: 30rem;
+}
+.screen__lead {
+  color: var(--ink-soft);
+  max-width: 30rem;
+}
+
+/* ============================================================
+   BUTTONS  (large targets, clear states)
+   ============================================================ */
+.btn {
+  font-family: inherit;
+  font-size: var(--fs-body);
+  font-weight: 700;
+  line-height: 1.2;
+  min-height: var(--touch);
+  padding: 0.85rem 1.5rem;
+  border-radius: var(--radius);
+  border: 2px solid transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  text-align: center;
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+              transform 0.08s ease, box-shadow 0.15s ease;
+}
+.btn .symbol { font-size: 1.6rem; }
+.btn:active { transform: translateY(1px); }
+
+.btn--big {
+  font-size: 1.375rem;
+  min-height: 68px;
+  padding: 1rem 1.75rem;
+}
+.btn--big .symbol { font-size: 1.9rem; }
+
+.btn--primary {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: var(--shadow-soft);
+}
+.btn--primary:hover { background: var(--primary-strong); }
+
+.btn--secondary {
+  background: var(--surface);
+  color: var(--primary-strong);
+  border-color: var(--primary);
+}
+.btn--secondary:hover { background: var(--primary-tint); }
+
+.btn--ghost {
+  background: transparent;
+  color: var(--ink-soft);
+  border-color: var(--edge);
+}
+.btn--ghost:hover { background: var(--surface-sunk); color: var(--ink); }
+
+.btn--calm {
+  background: var(--calm);
+  color: var(--calm-ink);
+  border-color: var(--calm-strong);
+}
+.btn--calm:hover { background: var(--calm-strong); }
+
+.btn--listen { font-weight: 700; }
+
+/* ============================================================
+   WELCOME
+   ============================================================ */
+.screen--welcome { gap: var(--space-4); padding-block: clamp(2.5rem, 8vh, 4rem); }
+.screen--welcome .btn { max-width: 30rem; width: 100%; }
+
+/* ============================================================
+   PICKER
+   ============================================================ */
+.picker {
+  display: grid;
+  gap: var(--space-3);
+  width: 100%;
+  margin-top: var(--space-2);
+}
+.card {
+  font-family: inherit;
+  width: 100%;
+  background: var(--surface);
+  border: 2px solid var(--edge);
+  border-radius: var(--radius);
+  padding: var(--space-3) var(--space-4);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  column-gap: var(--space-3);
+  row-gap: 0.25rem;
+  align-items: center;
+  text-align: left;
+  cursor: pointer;
+  min-height: 5.5rem;
+  transition: border-color 0.15s ease, background-color 0.15s ease,
+              transform 0.08s ease, box-shadow 0.15s ease;
+}
+.card:hover {
+  border-color: var(--primary);
+  background: var(--primary-tint);
+  box-shadow: var(--shadow-soft);
+}
+.card:active { transform: translateY(1px); }
+.card__icon {
+  grid-row: 1 / span 2;
+  font-size: 2.75rem;
+  color: var(--primary);
+}
+.card__title { font-size: 1.375rem; font-weight: 700; color: var(--ink); }
+.card__hint { font-size: var(--fs-small); color: var(--ink-soft); }
+.card--ghost {
+  border-style: dashed;
+  background: transparent;
+}
+.card--ghost .card__icon { color: var(--ink-soft); }
+
+/* ============================================================
+   EXPLAINER STEP
+   ============================================================ */
+.step__count {
+  font-size: var(--fs-small);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.progress {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  margin-bottom: var(--space-1);
+}
+.progress__dot {
+  width: 0.85rem; height: 0.85rem;
+  border-radius: 50%;
+  background: var(--edge);
+}
+.progress__dot.is-done { background: var(--primary); }
+.progress__dot.is-now {
+  background: var(--surface);
+  border: 4px solid var(--primary);
+  width: 1.15rem; height: 1.15rem;
+}
+
+.step__figure { margin: 0; }
+.step__icon {
+  font-size: 5.5rem;
+  color: var(--primary);
+  background: var(--primary-tint);
+  border-radius: 50%;
+  width: 8.5rem;
+  height: 8.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.step__sentence {
+  margin: 0;
+  font-size: var(--fs-step);
+  line-height: 1.35;
+  font-weight: 700;
+  max-width: 28rem;
+}
+
+/* hard word shown with a plain inline explanation */
+.term {
+  text-decoration: underline dotted var(--gold);
+  text-underline-offset: 4px;
+}
+.term__gloss {
+  font-weight: 400;
+  color: var(--ink-soft);
+  font-size: 1.375rem;        /* still well above 16px */
+}
+
+.step__why {
+  background: var(--surface-sunk);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
+  padding: var(--space-3) var(--space-3);
+  max-width: 30rem;
+  color: var(--ink);
+}
+.step__why-label {
+  display: block;
+  font-size: var(--fs-small);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--primary-strong);
+  margin-bottom: 0.35rem;
+}
+
+.btn--calm,
+.btn--listen { width: 100%; max-width: 28rem; }
+
+.step__nav {
+  display: flex;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 30rem;
+  margin-top: var(--space-2);
+}
+.step__nav .btn { flex: 1; }
+
+/* ============================================================
+   CONSENT
+   ============================================================ */
+.choices {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 30rem;
+}
+.choice { display: block; cursor: pointer; }
+.choice input { position: absolute; opacity: 0; pointer-events: none; }
+.choice__body {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--surface);
+  border: 2px solid var(--edge);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  min-height: var(--touch);
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.choice__icon { font-size: 2rem; color: var(--ink-soft); }
+.choice__text { font-size: 1.375rem; font-weight: 700; flex: 1; text-align: left; }
+.choice__tick {
+  font-size: 1.6rem;
+  color: var(--primary);
+  opacity: 0;
+}
+.choice:hover .choice__body { border-color: var(--primary); background: var(--primary-tint); }
+.choice input:checked + .choice__body {
+  border-color: var(--primary);
+  background: var(--primary-tint);
+}
+.choice input:checked + .choice__body .choice__tick { opacity: 1; }
+.choice input:checked + .choice__body .choice__icon { color: var(--primary); }
+
+/* ============================================================
+   END / CARD
+   ============================================================ */
+.screen--end .card-preview {
+  width: 100%;
+  max-width: 30rem;
+  background: var(--gold-tint);
+  border: 1px solid #e7d3a6;
+  border-radius: var(--radius);
+  padding: var(--space-3);
+}
+.card-preview__line {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  justify-content: center;
+  font-size: 1.25rem;
+  color: #6f4e15;
+  flex-wrap: wrap;
+}
+.card-preview__line .symbol { font-size: 1.6rem; color: var(--gold); }
+
+.end__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 30rem;
+  margin-top: var(--space-2);
+}
+
+/* ============================================================
+   PASTE MY OWN WORDS
+   ============================================================ */
+.custom-input {
+  width: 100%;
+  max-width: 32rem;
+  font-family: inherit;
+  font-size: var(--fs-body);
+  line-height: var(--lh);
+  color: var(--ink);
+  background: var(--surface);
+  border: 2px solid var(--edge);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  resize: vertical;
+  min-height: 9rem;
+}
+.custom-input:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+.custom-input::placeholder { color: #9a8c7c; }
+
+/* ============================================================
+   COUNTDOWN (only runs on tap)
+   ============================================================ */
+.countdown-status {
+  min-height: 2.6rem;
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--primary-strong);
+  line-height: 1.1;
+}
+.countdown-status:empty { min-height: 0; }
+
+/* ============================================================
+   PRINTABLE CARD
+   Hidden on screen; revealed only when printing (print-to-PDF).
+   Real text => selectable in the saved PDF.
+   ============================================================ */
+.print-card { display: none; }
+
+@media print {
+  @page { size: A4 portrait; margin: 14mm; }
+
+  /* hide the interactive app, show only the card */
+  .app, .skip-link { display: none !important; }
+
+  html, body {
+    background: #fff !important;
+    color: #1c1c1c;
+    font-size: 12pt;
+  }
+
+  .print-card {
+    display: block;
+    color: #1c1c1c;
+    font-family: Verdana, Tahoma, "Open Sans", sans-serif;
+  }
+
+  .pc-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 2px solid #2c6a5e;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+  }
+  .pc-head__mark { font-size: 26pt; color: #c2533f; }
+  .pc-kicker {
+    margin: 0; font-size: 10pt; letter-spacing: 0.08em;
+    text-transform: uppercase; color: #2c6a5e; font-weight: 700;
+  }
+  .pc-title { margin: 0; font-size: 20pt; }
+
+  .pc-consent {
+    display: flex; align-items: center; gap: 8px;
+    background: #f6e9cf;
+    border: 1.5pt solid #b9802b;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 14px;
+    font-size: 13pt;
+  }
+  .pc-consent .symbol { font-size: 18pt; color: #b9802b; }
+
+  .pc-steps { list-style: none; margin: 0; padding: 0; }
+  .pc-step {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 9px 0;
+    border-bottom: 1pt solid #e3d8c5;
+    break-inside: avoid;
+  }
+  .pc-step__icon {
+    font-size: 22pt; color: #2c6a5e;
+    flex: 0 0 auto;
+  }
+  .pc-step__body { flex: 1; }
+  .pc-step__sentence { margin: 0; font-size: 13pt; font-weight: 700; }
+  .pc-num { color: #2c6a5e; }
+  .pc-step__why { margin: 2px 0 0; font-size: 11pt; color: #444; }
+  .pc-gloss { display: block; margin-top: 2px; font-size: 10pt; color: #6f5a2a; }
+
+  .pc-foot {
+    margin-top: 14px;
+    font-size: 11pt;
+    color: #333;
+    font-style: italic;
+  }
+}
+
+/* ============================================================
+   MOTION — respect prefers-reduced-motion
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================================
+   SMALL SCREENS
+   ============================================================ */
+@media (max-width: 30rem) {
+  :root { --fs-step: 1.5rem; --fs-title: 1.5rem; }
+  .app { padding-inline: var(--space-2); }
+  .screen { padding: var(--space-4) var(--space-3); }
+  .step__nav { flex-direction: row; }
+}

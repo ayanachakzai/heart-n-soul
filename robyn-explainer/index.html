@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>My appointment, one step at a time</title>
+  <meta name="description" content="An easy-read, step-by-step explainer for medical appointments." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Skip link for keyboard users -->
+  <a class="skip-link" href="#main">Skip to the main part</a>
+
+  <div class="app">
+    <header class="app__header">
+      <span class="brand">
+        <span class="symbol brand__mark" aria-hidden="true">favorite</span>
+        <span class="brand__name">Heart &amp; Soul</span>
+      </span>
+    </header>
+
+    <main id="main" class="app__main">
+
+      <!-- ============================================================
+           SCREEN: WELCOME
+           ============================================================ -->
+      <section class="screen screen--welcome is-active" id="screen-welcome" aria-labelledby="welcome-title" tabindex="-1">
+        <span class="symbol screen__icon" aria-hidden="true">waving_hand</span>
+        <h1 id="welcome-title" class="screen__title">Let's look at what happens, one step at a time.</h1>
+        <p class="screen__lead">We will go slowly. You are in control. You can stop any time.</p>
+        <button type="button" class="btn btn--primary btn--big" id="start-btn">
+          <span class="symbol" aria-hidden="true">play_circle</span>
+          <span>Show me what happens at my appointment</span>
+        </button>
+      </section>
+
+      <!-- ============================================================
+           SCREEN: PICKER
+           ============================================================ -->
+      <section class="screen" id="screen-picker" hidden aria-labelledby="picker-title" tabindex="-1">
+        <h2 id="picker-title" class="screen__title">What is your appointment for?</h2>
+        <p class="screen__lead">Pick one. We will explain it, step by step.</p>
+
+        <ul class="picker" role="list">
+          <li>
+            <button type="button" class="card" data-procedure="blood-test">
+              <span class="symbol card__icon" aria-hidden="true">bloodtype</span>
+              <span class="card__title">Blood test</span>
+              <span class="card__hint">We take a little blood to check your health.</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="card" data-procedure="blood-pressure">
+              <span class="symbol card__icon" aria-hidden="true">monitor_heart</span>
+              <span class="card__title">Blood pressure check</span>
+              <span class="card__hint">A soft band gives your arm a gentle squeeze.</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="card card--ghost" data-procedure="custom">
+              <span class="symbol card__icon" aria-hidden="true">edit_note</span>
+              <span class="card__title">Paste my own words</span>
+              <span class="card__hint">Put in your own letter. We make it easy to read.</span>
+            </button>
+          </li>
+        </ul>
+      </section>
+
+      <!-- ============================================================
+           SCREEN: PASTE-MY-OWN-WORDS
+           ============================================================ -->
+      <section class="screen" id="screen-custom" hidden aria-labelledby="custom-title" tabindex="-1">
+        <span class="symbol screen__icon" aria-hidden="true">edit_note</span>
+        <h2 id="custom-title" class="screen__title">Paste the words from your letter.</h2>
+        <p class="screen__lead">We will break them into small, simple steps you can read.</p>
+        <label class="visually-hidden" for="custom-input">Paste your appointment words here</label>
+        <textarea id="custom-input" class="custom-input" rows="6"
+          placeholder="For example: You have an appointment for a blood test. Please arrive ten minutes early. You do not need to stop eating."></textarea>
+        <nav class="step__nav" aria-label="Move between steps">
+          <button type="button" class="btn btn--secondary" id="custom-back-btn">
+            <span class="symbol" aria-hidden="true">arrow_back</span>
+            <span>Back</span>
+          </button>
+          <button type="button" class="btn btn--primary" id="custom-go-btn">
+            <span>Make it easy to read</span>
+            <span class="symbol" aria-hidden="true">arrow_forward</span>
+          </button>
+        </nav>
+      </section>
+
+      <!-- ============================================================
+           SCREEN: EXPLAINER STEP (one step per screen, data-driven)
+           Also renders the CONSENT step when the step has choices.
+           ============================================================ -->
+      <section class="screen" id="screen-step" hidden aria-labelledby="step-sentence" tabindex="-1">
+        <p class="step__count"><span id="step-current">1</span> of <span id="step-total">6</span></p>
+        <div class="progress" id="progress" aria-hidden="true"></div>
+
+        <figure class="step__figure">
+          <span class="symbol step__icon" id="step-icon" aria-hidden="true">vaccines</span>
+        </figure>
+
+        <h2 class="step__sentence" id="step-sentence" tabindex="-1">&nbsp;</h2>
+
+        <p class="step__why">
+          <span class="step__why-label">Why this happens</span>
+          <span id="step-why-text"></span>
+        </p>
+
+        <!-- Consent choices (shown only for a consent step) -->
+        <fieldset class="choices" id="step-choices" hidden>
+          <legend class="visually-hidden">Choose one</legend>
+        </fieldset>
+
+        <!-- Optional self-soothe, only runs when she taps it -->
+        <button type="button" class="btn btn--calm" id="countdown-btn" hidden>
+          <span class="symbol" aria-hidden="true">self_improvement</span>
+          <span>Count me down: 3, 2, 1</span>
+        </button>
+        <p class="countdown-status" id="countdown-status" role="status" aria-live="assertive"></p>
+
+        <button type="button" class="btn btn--ghost btn--listen" id="listen-step-btn">
+          <span class="symbol" aria-hidden="true">volume_up</span>
+          <span>Read this step to me</span>
+        </button>
+
+        <nav class="step__nav" aria-label="Move between steps">
+          <button type="button" class="btn btn--secondary" id="back-btn">
+            <span class="symbol" aria-hidden="true">arrow_back</span>
+            <span>Back</span>
+          </button>
+          <button type="button" class="btn btn--primary" id="next-btn">
+            <span id="next-label">Next</span>
+            <span class="symbol" aria-hidden="true">arrow_forward</span>
+          </button>
+        </nav>
+      </section>
+
+      <!-- ============================================================
+           SCREEN: END
+           ============================================================ -->
+      <section class="screen screen--end" id="screen-end" hidden aria-labelledby="end-title" tabindex="-1">
+        <span class="symbol screen__icon screen__icon--good" aria-hidden="true">check_circle</span>
+        <h2 id="end-title" class="screen__title">That's the whole visit. You've got this.</h2>
+        <p class="screen__lead">You can hear it all out loud, or keep a card to show staff.</p>
+
+        <div class="card-preview" id="card-preview" hidden>
+          <p class="card-preview__line">
+            <span class="symbol" aria-hidden="true">verified</span>
+            <span id="card-preview-text"></span>
+          </p>
+        </div>
+
+        <div class="end__actions">
+          <button type="button" class="btn btn--secondary" id="read-all-btn">
+            <span class="symbol" aria-hidden="true">volume_up</span>
+            <span>Read the whole thing to me</span>
+          </button>
+          <button type="button" class="btn btn--primary btn--big" id="download-btn">
+            <span class="symbol" aria-hidden="true">download</span>
+            <span>Download my card</span>
+          </button>
+          <button type="button" class="btn btn--ghost" id="restart-btn">
+            <span class="symbol" aria-hidden="true">restart_alt</span>
+            <span>Start again</span>
+          </button>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="app__footer">
+      <p>You are in control. You can stop, go back, or ask a question at any time.</p>
+    </footer>
+  </div>
+
+  <!-- ============================================================
+       PRINT CARD — hidden on screen, shown only when printing.
+       Populated by app.js so "Download my card" (print-to-PDF)
+       produces a one-page card with selectable text.
+       ============================================================ -->
+  <div id="print-card" class="print-card" aria-hidden="true"></div>
+
+  <script src="procedures.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
